@@ -295,7 +295,8 @@ def main():
                     progs += 1
             el.clear()
     buf.write("</tv>\n")
-    with gzip.open(os.path.join(a.out, "epg.xml.gz"), "wb", compresslevel=9) as f:
+    with open(os.path.join(a.out, "epg.xml.gz"), "wb") as raw, \
+            gzip.GzipFile(filename="epg.xml", mode="wb", fileobj=raw, compresslevel=9, mtime=0) as f:
         f.write(buf.getvalue().encode("utf-8"))
     print("epg: %d channels, %d programmes" % (len(used), progs), file=sys.stderr)
     if a.report:
