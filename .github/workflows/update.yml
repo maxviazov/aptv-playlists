@@ -1,0 +1,36 @@
+name: update
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build playlists and EPG
+        run: python3 build.py --out . --base-url https://maxviazov.github.io/aptv-playlists/
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rus.m3u movies.m3u epg.xml.gz
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Update playlists and EPG $(date -u +%Y-%m-%d)"
+            git push
+          fi
