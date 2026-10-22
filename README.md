@@ -11,3 +11,7 @@ Russian and movie channel playlists from [iptv-org](https://github.com/iptv-org/
 Both playlists already point to the EPG in their header (`url-tvg`). The files are rebuilt daily by a GitHub Action (`build.py`, Python stdlib only). The EPG covers yesterday through the next 7 days and only includes matched channels.
 
 Streams and schedules belong to their original sources; this repo just links them.
+
+## Dead streams
+
+`exclude.txt` lists stream URLs that `build.py` drops from both playlists. It is maintained by `tools/streamcheck.py`, which runs weekly on a Mac in Israel (stream availability depends on the viewer's location, so it can't run in GitHub Actions): a URL is excluded after failing two weekly checks in a row (timeouts, DNS/connection errors, 404/410, 5xx, non-stream links) and comes back as soon as it passes once. Geo-blocked answers (401/403/451) are never excluded.

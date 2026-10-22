@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rebuild iptv-org playlists with tvg-id matched to the iptvx.one EPG.
 
-Usage: python3 build.py [--out DIR] [--base-url URL] [--epg-file PATH]
+Usage: python3 build.py [--out DIR] [--base-url URL] [--epg-file PATH] [--exclude FILE]
 Stdlib only.
 """
 import argparse, datetime as dt, gzip, io, json, os, re, sys, urllib.request
@@ -78,6 +78,17 @@ def fetch(url):
     if data[:2] == b"\x1f\x8b":
         data = gzip.decompress(data)
     return data
+
+
+def load_exclude(path):
+    """One URL per line; blank lines and '#' comments (whole-line or after whitespace) ignored."""
+    urls = set()
+    if path and os.path.exists(path):
+        for line in open(path, encoding="utf-8"):
+            line = line.strip()
+            if line and not line.startswith("#"):
+                urls.add(line.split()[0])
+    return urls
 
 
 def parse_time(s):
@@ -227,6 +238,8 @@ def main():
     ap.add_argument("--base-url", default="")
     ap.add_argument("--epg-file", help="use a local (optionally gzipped) EPG instead of downloading")
     ap.add_argument("--report", help="write match report JSON here")
+    ap.add_argument("--exclude", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "exclude.txt"),
+                    help="file with stream URLs to drop (one per line, # comments)")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
 
@@ -243,10 +256,13 @@ def main():
     chans = {c["id"]: c for c in json.loads(fetch(CHANNELS_URL))}
     epg_url = (a.base_url.rstrip("/") + "/epg.xml.gz") if a.base_url else "epg.xml.gz"
 
-    used, report = set(), {}
+    excluded = load_exclude(a.exclude)
+    print("exclude list: %d URLs" % len(excluded), file=sys.stderr)
+    used, report, outputs = set(), {}, {}
     for key, url in PLAYLISTS.items():
         lines = fetch(url).decode("utf-8", "replace").splitlines()
         out, rows = ['#EXTM3U url-tvg="%s" x-tvg-url="%s"' % (epg_url, epg_url)], []
+        block, meta, skipped = None, None, 0
         for line in lines:
             if line.startswith("#EXTM3U"):
                 continue
@@ -255,10 +271,9 @@ def main():
                 tid = m.group(1) if m else ""
                 name = line.rsplit(",", 1)[1].strip() if "," in line else ""
                 cid, how = match_entry(tid, name, chans, epg)
-                rows.append({"tvg_id": tid, "name": name, "epg_id": cid, "how": how,
-                             "epg_name": epg.names[cid][0] if cid else None})
+                meta = ({"tvg_id": tid, "name": name, "epg_id": cid, "how": how,
+                         "epg_name": epg.names[cid][0] if cid else None}, cid)
                 if cid:
-                    used.add(cid)
                     dn = epg.names[cid][0].replace('"', "'")
                     attrs = 'tvg-id="%s" tvg-name="%s"' % (cid, dn)
                     if m:
@@ -266,12 +281,30 @@ def main():
                     else:
                         line = line.replace("#EXTINF:-1", "#EXTINF:-1 " + attrs, 1)
                     line = re.sub(r'(tvg-name="[^"]*")(.*?)\s+tvg-name="[^"]*"', r"\1\2", line)
-            out.append(line)
-        with open(os.path.join(a.out, key + ".m3u"), "w", encoding="utf-8") as f:
-            f.write("\n".join(out) + "\n")
+                block = [line]
+            elif block is not None and (line.startswith("#") or not line.strip()):
+                if line.strip():
+                    block.append(line)
+            elif block is not None:
+                if line.strip() in excluded:
+                    skipped += 1
+                else:
+                    out.extend(block + [line])
+                    rows.append(meta[0])
+                    if meta[1]:
+                        used.add(meta[1])
+                block, meta = None, None
+            elif line.strip():
+                out.append(line)
+        outputs[key + ".m3u"] = "\n".join(out) + "\n"
         n = sum(1 for r in rows if r["epg_id"])
-        print("%s: matched %d/%d" % (key, n, len(rows)), file=sys.stderr)
+        print("%s: %d channels (%d excluded), EPG matched %d" % (key, len(rows), skipped, n), file=sys.stderr)
+        if len(rows) < 50:
+            sys.exit("%s looks broken (%d channels), not overwriting outputs" % (key, len(rows)))
         report[key] = rows
+    for fn, text in outputs.items():
+        with open(os.path.join(a.out, fn), "w", encoding="utf-8") as f:
+            f.write(text)
 
     now = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
     lo = dt.datetime(now.year, now.month, now.day) - dt.timedelta(days=DAYS_BACK)
