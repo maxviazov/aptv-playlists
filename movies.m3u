@@ -37,8 +37,6 @@ https://shd-amg-fast.edgenextcdn.net/tx001/playlist.m3u8
 https://afrafhls.wns.live/hls/stream.m3u8
 #EXTINF:-1 tvg-id="AlankarTV.in@SD" tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_ALANKAR/images/LOGO_HD/image.png" group-title="Movies",Alankar TV (720p)
 https://livetv.tarangplus.in/alankar-origin/live/playlist.m3u8
-#EXTINF:-1 tvg-id="AllTimeMovies.in@SD" tvg-logo="https://yt3.googleusercontent.com/U4INXhwmEUOABHoemQBpI6C9t4jb9iBmDvZ3ZT3lAb9Au_jVl32NL8XDpy-9cBjRJ2LP69Ovzg=s900-c-k-c0x00ffffff-no-rj" group-title="Movies",All Time Movies (576p)
-https://tvsen6.aynaott.com/a2cKGQtB/index.m3u8
 #EXTINF:-1 tvg-id="AlloCine.cm@SD" tvg-logo="https://raw.githubusercontent.com/songwenhui239/Songwenhui239/refs/heads/main/Allo%20Cine.jpeg" group-title="Movies",Allo Cine (1080p)
 https://d1yl6bf4hrzbr0.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-5km3zs4zs9sp0/allo.m3u8
 #EXTINF:-1 tvg-id="AMC.us@EastHD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/AMC_logo_2019.svg/960px-AMC_logo_2019.svg.png" group-title="Movies",AMC (United States) (720p)
@@ -160,8 +158,6 @@ https://edge.essastream.com/borealtelevision/tracks-v1a1/mono.m3u8
 https://cafefhls.wns.live/hls/stream.m3u8
 #EXTINF:-1 tvg-id="CanalCineDios.co@SD" tvg-logo="https://i.imgur.com/S4xqZgV.png" group-title="Movies",Canal Cine Dios
 https://canal.mediaserver.com.co/live/cinedios.m3u8
-#EXTINF:-1 tvg-id="CCTV6.cn@HD" tvg-logo="https://i.imgur.com/rFiaef7.png" group-title="Movies",CCTV-6 HD (1080p)
-http://69.30.245.50/live/cctv6.m3u8
 #EXTINF:-1 tvg-id="CCTVStormTheater.cn@HD" tvg-logo="https://i.imgur.com/rEttkKm.png" group-title="Movies",CCTV-Storm Theater (1080p)
 http://38.75.136.137:98/gslb/dsdqpub/fyjc.m3u8?auth=testpub
 #EXTINF:-1 tvg-id="CCTVTheFirstTheater.cn@HD" tvg-logo="https://i.imgur.com/eFxD3hq.png" group-title="Movies",CCTV-The First Theater (1080p)
@@ -311,8 +307,6 @@ https://jmp2.uk/plu-61f33318210549000806a530.m3u8
 https://jmp2.uk/plu-561c5b0dada51f8004c4d855.m3u8
 #EXTINF:-1 tvg-id="ClassiqueTV.br@SD" tvg-logo="https://i.imgur.com/rHxcraT.png" group-title="Movies",Classique TV (360p)
 https://stmv1.srvif.com/classique/classique/playlist.m3u8
-#EXTINF:-1 tvg-id="CNDFilmMiddleSchoolChannel.cn@SD" tvg-logo="https://i.imgur.com/4uG8HsQ.png" group-title="Movies",CND Film Middle School Channel
-http://live2.rxip.sc96655.com/live/zxs_4000.m3u8?A=&E=&K=&P=&S=&U=
 #EXTINF:-1 tvg-id="ColorsBanglaCinema.in@SD" tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_COLORS_BANGLA_CINEMA/images/LOGO_HD/image.png" group-title="Movies",Colors Bangla Cinema (576p)
 http://103.151.60.162:2122/play/a02m/index.m3u8?hls
 #EXTINF:-1 tvg-id="ColorsCineplex.in@SD" tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_COLORS_CINEPLEX/images/LOGO_HD/image.png" group-title="Movies",Colors Cineplex (576p)
@@ -464,9 +458,6 @@ https://filmex-filmexclasico-xumo.amagi.tv/playlist.m3u8
 https://pb-x9qsxrudiq9d2.akamaized.net/webvtt/v1/18584c3f3a2a4df8/88886014/master.m3u8
 #EXTINF:-1 tvg-id="FilmUALive.ua@SD" tvg-logo="https://i.imgur.com/kizTBgS.png" group-title="Movies",FilmUA Live
 https://dash2.antik.sk/live/test_film_life_atktv/playlist.m3u8
-#EXTINF:-1 tvg-id="filmua-drama" tvg-name="Film.Ua Drama" tvg-logo="https://i.imgur.com/Hnwsh5d.png" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.3" group-title="Movies;Series",FilmUADrama (1080p)
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.3
-http://88.99.215.227/FilmUADrama/index.m3u8
 #EXTINF:-1 tvg-id="FlicksofFury.us@SD" tvg-logo="https://i.imgur.com/rtL5L81.png" group-title="Movies",Flicks of Fury
 https://jmp2.uk/plu-58e55b14ad8e9c364d55f717.m3u8
 #EXTINF:-1 tvg-id="FrightFlix.us@SD" tvg-logo="https://i.imgur.com/rgNQYAl.png" group-title="Movies",FrightFlix (720p)

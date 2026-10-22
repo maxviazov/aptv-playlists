@@ -100,8 +100,6 @@ http://178.124.179.122:8080/BT5/index.m3u8
 http://ott-7.sevstar.net/belarus24/index.m3u8
 #EXTINF:-1 tvg-id="belarus24" tvg-name="Беларусь-24" tvg-logo="https://i.imgur.com/BP7tY6F.png" group-title="News",Belarus-24 HD (1080p)
 https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus24.smil/playlist.m3u8
-#EXTINF:-1 tvg-id="belgorod24" tvg-name="Белгород 24" tvg-logo="https://i.imgur.com/EEirvyx.png" group-title="General",Belgorod 24 (1080p)
-https://belnovosti.cdn.easyhoster.ru:8443/stream.m3u8
 #EXTINF:-1 tvg-id="bolshaya-azia" tvg-name="Большая Азия" tvg-logo="https://i.imgur.com/vruuPKF.png" group-title="Undefined",Big Asia (720p)
 http://live-bigasia.cdnvideo.ru/bigasia/bigasia.smil/playlist.m3u8
 #EXTINF:-1 tvg-id="big-planet" tvg-name="Big Planet" tvg-logo="https://i.imgur.com/wyuqWTR.png" group-title="Undefined",Big Planet (576p)
@@ -284,9 +282,6 @@ rtmp://89.28.25.122/live/tnt_md
 http://stream.mcquack.net/401/index.m3u8
 #EXTINF:-1 tvg-id="FILMBOXPlusOne.pl@UkraineBaltics" tvg-logo="https://spiintl.com/data/files/kcfinderUploadDir/images/filmboxplus/filmbox%2Bone.png" group-title="Movies",FILMBOX+ One Ukraine & Baltics (450p) [Geo-blocked]
 https://s70378.cdn.ngenix.net/filmbox/index.m3u8
-#EXTINF:-1 tvg-id="filmua-drama" tvg-name="Film.Ua Drama" tvg-logo="https://i.imgur.com/Hnwsh5d.png" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.3" group-title="Movies;Series",FilmUADrama (1080p)
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.3
-http://88.99.215.227/FilmUADrama/index.m3u8
 #EXTINF:-1 tvg-id="FirstMusicChannel.by@SD" tvg-logo="https://i.imgur.com/YdyFJrl.png" group-title="Music",First Music Channel (1080p)
 http://rtmp.one.by:1300
 #EXTINF:-1 tvg-id="tnt-music" tvg-name="ТНТ-Music" tvg-logo="https://i.imgur.com/tXABQDE.png" group-title="Music",FON Music (576p)
