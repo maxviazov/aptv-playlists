@@ -7,11 +7,11 @@ Russian and movie channel playlists from [iptv-org](https://github.com/iptv-org/
 - Playlist (Russian): https://maxviazov.github.io/aptv-playlists/rus.m3u
 - Playlist (movies): https://maxviazov.github.io/aptv-playlists/movies.m3u
 - Кино (Russian movie/series channels + English-language movie channels): https://maxviazov.github.io/aptv-playlists/kino.m3u
-- Хоккей (KHL/NHL, regional KHL broadcasters, Russian sports channels): https://maxviazov.github.io/aptv-playlists/hockey.m3u
+- Хоккей (hockey channels: FloHockey, NHL; then regional channels that carry local KHL clubs; then general sports): https://maxviazov.github.io/aptv-playlists/hockey.m3u
 - Юмор (Russian comedy channels + English-language comedy): https://maxviazov.github.io/aptv-playlists/humor.m3u
 - EPG: https://maxviazov.github.io/aptv-playlists/epg.xml.gz
 
-The themed playlists (kino, hockey, humor) are assembled by `build.py` from iptv-org (languages/rus, categories movies/sports/comedy), [smolnp/IPTVru](https://github.com/smolnp/IPTVru) and [Free-TV/IPTV](https://github.com/Free-TV/IPTV), and contain only streams that passed the last check from Israel.
+The themed playlists (kino, hockey, humor) are assembled by `build.py` from iptv-org (languages/rus, categories movies/sports/comedy), [smolnp/IPTVru](https://github.com/smolnp/IPTVru) , [Free-TV/IPTV](https://github.com/Free-TV/IPTV) and free FAST services (Pluto TV, Tubi via [BuddyChewChew/app-m3u-generator](https://github.com/BuddyChewChew/app-m3u-generator)), and contain only streams that passed the last check from Israel.
 
 All playlists already point to the EPG in their header (`url-tvg`). The files are rebuilt daily by a GitHub Action (`build.py`, Python stdlib only). The EPG covers yesterday through the next 7 days and only includes matched channels.
 

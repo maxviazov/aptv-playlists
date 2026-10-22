@@ -17,6 +17,10 @@ SOURCES = {
     "comedy": "https://iptv-org.github.io/iptv/categories/comedy.m3u",
     "smolnp": "https://raw.githubusercontent.com/smolnp/IPTVru/gh-pages/IPTVru.m3u",
     "freetv": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+    "index": "https://iptv-org.github.io/iptv/index.m3u",
+    # free ad-supported (FAST) services, public generator lists
+    "pluto": "https://raw.githubusercontent.com/BuddyChewChew/app-m3u-generator/main/playlists/plutotv_all.m3u",
+    "tubi": "https://raw.githubusercontent.com/BuddyChewChew/app-m3u-generator/main/playlists/tubi_all.m3u",
 }
 PLAYLISTS = SOURCES  # backwards compatible name
 # Themed playlists keep only streams that passed the check from Israel
@@ -25,9 +29,25 @@ OUTPUTS = ("rus", "movies", "kino", "hockey", "humor")
 STRICT = {"kino", "hockey", "humor"}
 MIN_CHANNELS = {"rus": 50, "movies": 50}
 EN_COUNTRIES = {"US", "UK", "GB", "CA", "AU", "IE", "NZ"}
-HOCKEY_RE = re.compile(r"hockey|khl|nhl|хокке|кхл", re.I)
-KHL_REGIONAL_RE = re.compile(r"belarus[- ]?5|беларусь[- ]?5|qazsport|казспорт|\bbst\b|\bбст\b|\btnv\b|\bтнв\b|"
-                             r"nizhniy ?novgorod ?24|нижний новгород 24|санкт-петербург|sankt-peterburg", re.I)
+HOCKEY_RE = re.compile(r"hockey|\bkhl\b|\bnhl\b|хокке|\bкхл\b|\biihf\b|\bvhl\b|\bmhl\b|\bвхл\b|\bмхл\b", re.I)
+# Regional channels that hold local KHL rights, in display order: (name regex, club)
+KHL_REGIONAL = [
+    (r"^(belarus[- ]?5|беларусь[- ]?5)", "Динамо Минск"),
+    (r"^(sankt-peterburg|санкт-петербург)\b", "СКА"),
+    (r"^qazsport", "Барыс"),
+    (r"^(tnv|тнв)", "Ак Барс / Нефтехимик"),
+    (r"^(bst|бст)( \(|$)", "Салават Юлаев"),
+    (r"^(nizhniy ?novgorod ?24|нижний новгород 24)", "Торпедо"),
+    (r"^(первый ярославский|pervyy yaroslavskiy)", "Локомотив"),
+    (r"^12 (канал|kanal) \((омск|omsk)\)", "Авангард"),
+    (r"^отв \(челябинск\)", "Трактор"),
+    (r"^отв \(екатеринбург\)", "Автомобилист"),
+    (r"^(отв \(приморье\)|otv-prim)", "Адмирал"),
+    (r"^(отс|ots)( \(|$)", "Сибирь"),
+    (r"^(тольятти 24|tolyatti 24)", "Лада"),
+    (r"^(сочи 24|sochi ?24)", "Сочи"),
+]
+KHL_REGIONAL = [(re.compile(p, re.I), club) for p, club in KHL_REGIONAL]
 SPORT_NAME_RE = re.compile(r"матч|match!|\bstart\b|старт|viju\+ ?sport|setanta|eurosport|okko|бокс|boks|"
                            r"mma|fight|extreme|экстрим|sport|спорт", re.I)
 HUMOR_RE = re.compile(r"comedy|komed|комед|юмор|yumor|humor|\btnt|\bтнт|peretz|перец|\bche!|^че\b|че!|2x2|"
@@ -301,9 +321,13 @@ def select(src):
     k += [(e, "Кино и сериалы") for e in src["freetv"] if e["group"] == "Russia" and KINO_FREETV_RE.search(e["name"])]
     k += [(e, "International") for e in src["movies"] if e["country"] in EN_COUNTRIES]
     h = cands["hockey"]
-    allsrc = [e for key in ("rus", "sports", "smolnp", "freetv") for e in src[key]]
-    h += [(e, "Хоккей") for e in allsrc if HOCKEY_RE.search(e["name"]) or "khl" in e["url"].lower()]
-    h += [(e, "Региональные (КХЛ)") for e in russian if KHL_REGIONAL_RE.search(e["name"])]
+    allsrc = [e for key in ("rus", "sports", "smolnp", "freetv", "index", "pluto", "tubi") for e in src[key]]
+    h += [(e, "Хоккей") for e in allsrc if HOCKEY_RE.search(e["name"])]
+    regional = russian + [e for e in src["index"] if e["country"] in CIS]
+    for rx, club in KHL_REGIONAL:
+        hits = [e for e in regional if rx.search(e["name"])]
+        hits.sort(key=lambda e: "not 24/7" in e["name"].lower())  # prefer 24/7 streams
+        h += [(dict(e, club=club), "КХЛ на региональных каналах") for e in hits]
     h += [(e, "Спорт") for e in src["rus"] if "Sports" in groups(e)]
     h += [(e, "Спорт") for e in src["smolnp"] if e["group"] == "Спортивные"]
     h += [(e, "Спорт") for e in src["freetv"] if e["group"] == "Russia" and SPORT_NAME_RE.search(e["name"])]
@@ -370,10 +394,16 @@ def main():
     for key in OUTPUTS:
         drop = excluded | geo if key in STRICT else excluded
         out, rows, skipped = ['#EXTM3U url-tvg="%s" x-tvg-url="%s"' % (epg_url, epg_url)], [], 0
+        names_seen = set()
         for e, group in selected[key]:
             if e["url"] in drop:
                 skipped += 1
                 continue
+            if key == "hockey":  # one working stream per channel is enough
+                nk = (group, e.get("club") or norm(e["name"]))  # regional: one channel per club
+                if nk in names_seen:
+                    continue
+                names_seen.add(nk)
             line = e["extinf"]
             cid, how = epg_id(e)
             if cid:
@@ -392,6 +422,9 @@ def main():
                 else:
                     head, _, tail = line.rpartition(",")
                     line = '%s group-title="%s",%s' % (head.rstrip(), group, tail)
+            if e.get("club"):
+                head, _, tail = line.rpartition(",")
+                line = "%s,%s · %s" % (head, tail, e["club"])
             out.extend([line] + e["opts"] + [e["url"]])
             rows.append({"tvg_id": e["tid"], "name": e["name"], "epg_id": cid, "how": how,
                          "epg_name": epg.names[cid][0] if cid else None})
