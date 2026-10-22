@@ -7,7 +7,8 @@ location-dependent, so this is NOT run in GitHub Actions).
 Rules:
   * a URL is added to exclude.txt after failing N consecutive runs (default 2, --seed uses 1);
   * a URL in exclude.txt that passes (or is merely geo-blocked) once is removed;
-  * geo/blocked answers (401/403/451/429) and unsupported schemes (rtmp, udp...) never exclude.
+  * geo-blocked answers (401/403/451) go to geoblocked.txt (dropped from the themed playlists
+    only); 429 and unsupported schemes (rtmp, udp...) are never listed.
 
 Usage:
   python3 tools/streamcheck.py [--seed] [--git] [--state FILE] [--dry-run]
@@ -21,15 +22,17 @@ from urllib.parse import urljoin, urlparse
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO)
-from build import PLAYLISTS, fetch  # noqa: E402
+from build import OUTPUTS, load_sources, select  # noqa: E402
 
 CURL = "/usr/bin/curl" if os.path.exists("/usr/bin/curl") else "curl"
 GH = next((p for p in ("/opt/homebrew/bin/gh", "/usr/local/bin/gh") if os.path.exists(p)), "gh")
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
       "(KHTML, like Gecko) Version/17.0 Safari/605.1.15")
 EXCLUDE = os.path.join(REPO, "exclude.txt")
+GEOBLOCKED = os.path.join(REPO, "geoblocked.txt")
 DEFAULT_STATE = os.path.expanduser("~/Library/Application Support/aptv-streamcheck/state.json")
-KEEP_CODES = {401, 403, 429, 451}  # alive but blocked for us: let the player say "unavailable"
+GEO_CODES = {401, 403, 451}  # alive but blocked for us: kept in rus/movies, dropped from themed lists
+KEEP_CODES = {429}
 
 
 def log(*a):
@@ -55,8 +58,8 @@ def parse_m3u(text, playlist):
 
 def curl(url, e, timeout, rng=False):
     cmd = [CURL, "-sL", "--compressed", "-m", str(timeout), "--connect-timeout", str(min(timeout, 10)),
-           "-A", e["ua"] or UA, "-o", "-", "-w", "\n__CODE__%{http_code} %{url_effective}"]
-    if e["ref"]:
+           "-A", e.get("ua") or UA, "-o", "-", "-w", "\n__CODE__%{http_code} %{url_effective}"]
+    if e.get("ref"):
         cmd += ["-e", e["ref"]]
     if rng:
         cmd += ["-r", "0-32767"]
@@ -70,18 +73,20 @@ def curl(url, e, timeout, rng=False):
 
 
 def err(rc, code):
-    """-> (excludable?, reason)"""
+    """-> (status, reason); status FAIL (dead), GEO (blocked for us) or KEEP (unknown, leave alone)"""
+    if code in GEO_CODES:
+        return "GEO", "HTTP %d" % code
     if code in KEEP_CODES:
-        return False, "HTTP %d" % code
+        return "KEEP", "HTTP %d" % code
     if code in (404, 410) or code >= 500:
-        return True, "HTTP %d" % code
+        return "FAIL", "HTTP %d" % code
     if 400 <= code < 500:
-        return False, "HTTP %d" % code
+        return "KEEP", "HTTP %d" % code
     names = {6: "DNS", 7: "connection refused", 28: "timeout", 35: "TLS", 51: "TLS", 60: "TLS",
              52: "empty reply", 56: "connection reset", 47: "redirect loop"}
     if rc in names:
-        return True, names[rc]
-    return False, "curl rc=%d http=%d" % (rc, code)
+        return "FAIL", names[rc]
+    return "KEEP", "curl rc=%d http=%d" % (rc, code)
 
 
 def first_uri(text):
@@ -100,8 +105,8 @@ def check_once(e, timeout):
     if rc == 28 and 200 <= code < 300 and body:
         return "OK", "continuous stream"
     if not (rc == 0 and 200 <= code < 300):
-        bad, why = err(rc, code)
-        return ("FAIL" if bad else "KEEP"), "playlist: " + why
+        st, why = err(rc, code)
+        return st, "playlist: " + why
     t = body[:200000].decode("utf-8", "replace")
     head = t[:3000].lstrip().lower()
     if "#extm3u" not in head:
@@ -118,8 +123,8 @@ def check_once(e, timeout):
             return "FAIL", "master playlist without variants"
         rc, code, eff, body = curl(urljoin(eff, v), e, timeout)
         if not (rc == 0 and 200 <= code < 300):
-            bad, why = err(rc, code)
-            return ("FAIL" if bad else "KEEP"), "variant: " + why
+            st, why = err(rc, code)
+            return st, "variant: " + why
         t = body[:200000].decode("utf-8", "replace")
     if "#EXTINF" not in t:
         return "FAIL", "no segments"
@@ -127,36 +132,36 @@ def check_once(e, timeout):
     rc, code, _, body = curl(urljoin(eff, seg), e, timeout, rng=True)
     if rc in (0, 28) and 200 <= code < 300 and body:
         return "OK", ""
-    bad, why = err(rc, code)
-    return ("FAIL" if bad else "KEEP"), "segment: " + why
+    st, why = err(rc, code)
+    return st, "segment: " + why
 
 
 def check(e):
     st, why = check_once(e, 10)
-    if st == "FAIL":  # second chance with a longer timeout, to skip slow-but-alive servers
+    if st in ("FAIL", "GEO"):  # second chance with a longer timeout, to skip slow-but-alive servers
         time.sleep(2)
         st, why = check_once(e, 25)
     return st, why
 
 
-def read_exclude():
+def read_exclude(path=EXCLUDE):
     urls = set()
-    if os.path.exists(EXCLUDE):
-        for l in open(EXCLUDE, encoding="utf-8"):
+    if os.path.exists(path):
+        for l in open(path, encoding="utf-8"):
             l = l.strip()
             if l and not l.startswith("#"):
                 urls.add(l.split()[0])
     return urls
 
 
-def write_exclude(rows):
-    lines = ["# Stream URLs dropped from the published playlists by build.py.",
+def write_list(path, rows, title):
+    lines = [title,
              "# Maintained by tools/streamcheck.py (weekly check from Israel); one URL per line,",
              "# anything after whitespace + '#' is a comment. A URL comes back as soon as it passes once.",
              ""]
     for pl, name, url, why in sorted(rows):
         lines.append("%s  # [%s] %s: %s" % (url, pl, name.replace("#", ""), why))
-    with open(EXCLUDE, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
 
@@ -196,18 +201,18 @@ def main():
     if a.git:
         git("pull", "-q", "--rebase", "--autostash", "origin", "main")
 
+    try:
+        selected = select(load_sources())
+    except Exception as ex:
+        sys.exit("cannot download source playlists (%s), nothing changed" % ex)
     entries, seen = [], set()
-    for key, url in PLAYLISTS.items():
-        try:
-            items = parse_m3u(fetch(url).decode("utf-8", "replace"), key)
-        except Exception as ex:
-            sys.exit("cannot download %s (%s), nothing changed" % (url, ex))
-        if len(items) < 50:
-            sys.exit("%s looks broken (%d entries), nothing changed" % (url, len(items)))
-        for e in items:
+    for key in OUTPUTS:
+        if len(selected[key]) < 3:
+            sys.exit("%s looks broken (%d entries), nothing changed" % (key, len(selected[key])))
+        for e, _ in selected[key]:
             if e["url"] not in seen:
                 seen.add(e["url"])
-                entries.append(e)
+                entries.append(dict(e, pl=key))
     log("checking %d unique stream URLs" % len(entries))
     with cf.ThreadPoolExecutor(a.workers) as ex:
         results = list(ex.map(check, entries))
@@ -222,32 +227,36 @@ def main():
     state = {}
     if os.path.exists(a.state):
         state = json.load(open(a.state, encoding="utf-8"))
-    old = read_exclude()
+    old = read_exclude(EXCLUDE) | read_exclude(GEOBLOCKED)
     today = dt.date.today().isoformat()
-    new_state, rows = {}, []
+    new_state, rows, geo_rows = {}, [], []
     for e, (st, why) in zip(entries, results):
         prev = state.get(e["url"], {})
-        if st == "FAIL":
+        if st == "KEEP" and why != "unchecked scheme":
+            st = "GEO"  # 429 / other 4xx / odd curl errors: not playable here, keep out of themed lists
+        if st in ("FAIL", "GEO"):
             s = {"fails": prev.get("fails", 0) + 1, "since": prev.get("since", today), "why": why}
             new_state[e["url"]] = s
             if s["fails"] >= threshold or e["url"] in old:
-                rows.append((e["pl"], e["name"], e["url"], "%s (failing since %s)" % (why, s["since"])))
-    added = {r[2] for r in rows} - old
-    removed = old - {r[2] for r in rows}
-    log("exclude: %d URLs (+%d, -%d)" % (len(rows), len(added), len(removed)))
+                row = (e["pl"], e["name"], e["url"], "%s (since %s)" % (why, s["since"]))
+                (rows if st == "FAIL" else geo_rows).append(row)
+    listed = {r[2] for r in rows + geo_rows}
+    added, removed = listed - old, old - listed
+    log("exclude: %d dead + %d geo-blocked URLs (+%d, -%d)" % (len(rows), len(geo_rows), len(added), len(removed)))
     if a.dry_run:
         return
     os.makedirs(os.path.dirname(a.state), exist_ok=True)
     json.dump(new_state, open(a.state, "w", encoding="utf-8"), indent=1)
-    write_exclude(rows)
+    write_list(EXCLUDE, rows, "# Dead stream URLs, dropped from all published playlists by build.py.")
+    write_list(GEOBLOCKED, geo_rows, "# Stream URLs that answer 401/403/451 (or other 4xx) from Israel: dropped from kino/hockey/humor only.")
 
     if a.git:
-        if not git("status", "--porcelain", "exclude.txt").stdout.strip():
-            log("exclude.txt unchanged, nothing to push")
+        if not git("status", "--porcelain", "exclude.txt", "geoblocked.txt").stdout.strip():
+            log("exclude lists unchanged, nothing to push")
             return
-        git("add", "exclude.txt")
+        git("add", "exclude.txt", "geoblocked.txt")
         git("-c", "user.name=aptv-streamcheck", "-c", "user.email=maxviazov@users.noreply.github.com",
-            "commit", "-q", "-m", "streamcheck %s: %d excluded (+%d, -%d)" % (today, len(rows), len(added), len(removed)))
+            "commit", "-q", "-m", "streamcheck %s: %d dead, %d geo-blocked (+%d, -%d)" % (today, len(rows), len(geo_rows), len(added), len(removed)))
         log("pushed via " + push())
         p = subprocess.run([GH, "workflow", "run", "update.yml", "-R", "maxviazov/aptv-playlists"],
                            capture_output=True, text=True)

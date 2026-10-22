@@ -9,10 +9,32 @@ import xml.etree.ElementTree as ET
 from collections import defaultdict
 from xml.sax.saxutils import escape, quoteattr
 
-PLAYLISTS = {
+# Source playlists (all openly published, free streams only).
+SOURCES = {
     "rus": "https://iptv-org.github.io/iptv/languages/rus.m3u",
     "movies": "https://iptv-org.github.io/iptv/categories/movies.m3u",
+    "sports": "https://iptv-org.github.io/iptv/categories/sports.m3u",
+    "comedy": "https://iptv-org.github.io/iptv/categories/comedy.m3u",
+    "smolnp": "https://raw.githubusercontent.com/smolnp/IPTVru/gh-pages/IPTVru.m3u",
+    "freetv": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
 }
+PLAYLISTS = SOURCES  # backwards compatible name
+# Themed playlists keep only streams that passed the check from Israel
+# (exclude.txt and geoblocked.txt both apply); rus/movies drop only exclude.txt.
+OUTPUTS = ("rus", "movies", "kino", "hockey", "humor")
+STRICT = {"kino", "hockey", "humor"}
+MIN_CHANNELS = {"rus": 50, "movies": 50}
+EN_COUNTRIES = {"US", "UK", "GB", "CA", "AU", "IE", "NZ"}
+HOCKEY_RE = re.compile(r"hockey|khl|nhl|хокке|кхл", re.I)
+KHL_REGIONAL_RE = re.compile(r"belarus[- ]?5|беларусь[- ]?5|qazsport|казспорт|\bbst\b|\bбст\b|\btnv\b|\bтнв\b|"
+                             r"nizhniy ?novgorod ?24|нижний новгород 24|санкт-петербург|sankt-peterburg", re.I)
+SPORT_NAME_RE = re.compile(r"матч|match!|\bstart\b|старт|viju\+ ?sport|setanta|eurosport|okko|бокс|boks|"
+                           r"mma|fight|extreme|экстрим|sport|спорт", re.I)
+HUMOR_RE = re.compile(r"comedy|komed|комед|юмор|yumor|humor|\btnt|\bтнт|peretz|перец|\bche!|^че\b|че!|2x2|"
+                      r"\bkvn|квн|sts love|стс love|gags|смех|laugh|fail ?army|ridiculous|funny|haha", re.I)
+KINO_FREETV_RE = re.compile(r"смотрим: (мелодрамы|тайны|честный детектив)|кино|kino", re.I)
+NON_EN_RE = re.compile(r"latam|latin|\bbr\b|brasil|brazil|espanol|colecao|coleccion|francais|italy|poland|vaya", re.I)
+BADGE_RE = re.compile(r"\s*[\u24b6-\u24e9]+")
 EPG_URL = "https://iptvx.one/EPG_LITE"
 CHANNELS_URL = "https://iptv-org.github.io/api/channels.json"
 DAYS_BACK, DAYS_FWD = 1, 7
@@ -232,6 +254,74 @@ def match_entry(tid, name, chans, epg):
     return None, ("conflict:" + ",".join(sorted(results))) if results else "none"
 
 
+def parse_playlist(text):
+    """-> list of entries {extinf, opts, url, name, tid, group, country}"""
+    entries, block = [], None
+    for line in text.splitlines():
+        if line.startswith(("#EXTM3U", "#PLAYLIST")):
+            continue
+        if line.startswith("#EXTINF"):
+            line = BADGE_RE.sub("", line).rstrip()
+            block = {"extinf": line, "opts": []}
+        elif block is not None and line.startswith("#"):
+            if line.strip():
+                block["opts"].append(line.strip())
+        elif block is not None and line.strip():
+            line_ = block["extinf"]
+            m = re.search(r'tvg-id="([^"]*)"', line_)
+            g = re.search(r'group-title="([^"]*)"', line_)
+            block.update(url=line.strip(), name=line_.rsplit(",", 1)[1].strip() if "," in line_ else "",
+                         tid=m.group(1) if m else "", group=g.group(1) if g else "")
+            base = block["tid"].partition("@")[0]
+            block["country"] = base.rsplit(".", 1)[-1].upper() if "." in base else ""
+            for o in block["opts"]:
+                if o.startswith("#EXTVLCOPT:http-user-agent="):
+                    block["ua"] = o.split("=", 1)[1]
+                elif o.startswith("#EXTVLCOPT:http-referrer="):
+                    block["ref"] = o.split("=", 1)[1]
+            entries.append(block)
+            block = None
+    return entries
+
+
+def load_sources():
+    return {k: parse_playlist(fetch(u).decode("utf-8", "replace")) for k, u in SOURCES.items()}
+
+
+def select(src):
+    """-> {output: [(entry, group-title override or None)]} before any exclusion, de-duplicated by URL."""
+    groups = lambda e: {p.strip() for p in e["group"].split(";")}
+    ru_like = lambda e: e["country"] in CIS or re.search(r"[а-яА-ЯёЁ]", e["name"])
+    cands = {"rus": [(e, None) for e in src["rus"]], "movies": [(e, None) for e in src["movies"]],
+             "kino": [], "hockey": [], "humor": []}
+    russian = src["rus"] + src["smolnp"] + [e for e in src["freetv"] if e["group"] == "Russia"]
+    k = cands["kino"]
+    k += [(e, "Кино и сериалы") for e in src["rus"] if groups(e) & {"Movies", "Series", "Classic"}]
+    k += [(e, "Кино и сериалы") for e in src["smolnp"] if e["group"].startswith("Кино")]
+    k += [(e, "Кино и сериалы") for e in src["freetv"] if e["group"] == "Russia" and KINO_FREETV_RE.search(e["name"])]
+    k += [(e, "International") for e in src["movies"] if e["country"] in EN_COUNTRIES]
+    h = cands["hockey"]
+    allsrc = [e for key in ("rus", "sports", "smolnp", "freetv") for e in src[key]]
+    h += [(e, "Хоккей") for e in allsrc if HOCKEY_RE.search(e["name"]) or "khl" in e["url"].lower()]
+    h += [(e, "Региональные (КХЛ)") for e in russian if KHL_REGIONAL_RE.search(e["name"])]
+    h += [(e, "Спорт") for e in src["rus"] if "Sports" in groups(e)]
+    h += [(e, "Спорт") for e in src["smolnp"] if e["group"] == "Спортивные"]
+    h += [(e, "Спорт") for e in src["freetv"] if e["group"] == "Russia" and SPORT_NAME_RE.search(e["name"])]
+    u = cands["humor"]
+    u += [(e, "Юмор") for e in russian if "Comedy" in groups(e) or HUMOR_RE.search(e["name"])]
+    u += [(e, "Юмор") for e in src["comedy"] if ru_like(e)]
+    u += [(e, "Comedy (EN)") for e in src["comedy"] if e["country"] in EN_COUNTRIES and not NON_EN_RE.search(e["name"])]
+    out = {}
+    for key, items in cands.items():
+        seen, lst = set(), []
+        for e, g in items:
+            if e["url"] not in seen:
+                seen.add(e["url"])
+                lst.append((e, g))
+        out[key] = lst
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=".")
@@ -240,6 +330,8 @@ def main():
     ap.add_argument("--report", help="write match report JSON here")
     ap.add_argument("--exclude", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "exclude.txt"),
                     help="file with stream URLs to drop (one per line, # comments)")
+    ap.add_argument("--geoblocked", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "geoblocked.txt"),
+                    help="URLs blocked from Israel (401/403/451): dropped from the themed playlists only")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
 
@@ -257,49 +349,56 @@ def main():
     epg_url = (a.base_url.rstrip("/") + "/epg.xml.gz") if a.base_url else "epg.xml.gz"
 
     excluded = load_exclude(a.exclude)
-    print("exclude list: %d URLs" % len(excluded), file=sys.stderr)
+    geo = load_exclude(a.geoblocked)
+    print("exclude list: %d URLs, geoblocked: %d" % (len(excluded), len(geo)), file=sys.stderr)
+    try:
+        selected = select(load_sources())
+    except Exception as ex:
+        sys.exit("source download failed (%s), not overwriting outputs" % ex)
+    cache = {}
+
+    def epg_id(e):
+        key = (e["tid"], e["name"])
+        if key not in cache:
+            if e["tid"] in epg.names:  # already an iptvx id (smolnp list)
+                cache[key] = (e["tid"], "source")
+            else:
+                cache[key] = match_entry(e["tid"], e["name"], chans, epg)
+        return cache[key]
+
     used, report, outputs = set(), {}, {}
-    for key, url in PLAYLISTS.items():
-        lines = fetch(url).decode("utf-8", "replace").splitlines()
-        out, rows = ['#EXTM3U url-tvg="%s" x-tvg-url="%s"' % (epg_url, epg_url)], []
-        block, meta, skipped = None, None, 0
-        for line in lines:
-            if line.startswith("#EXTM3U"):
+    for key in OUTPUTS:
+        drop = excluded | geo if key in STRICT else excluded
+        out, rows, skipped = ['#EXTM3U url-tvg="%s" x-tvg-url="%s"' % (epg_url, epg_url)], [], 0
+        for e, group in selected[key]:
+            if e["url"] in drop:
+                skipped += 1
                 continue
-            if line.startswith("#EXTINF"):
-                m = re.search(r'tvg-id="([^"]*)"', line)
-                tid = m.group(1) if m else ""
-                name = line.rsplit(",", 1)[1].strip() if "," in line else ""
-                cid, how = match_entry(tid, name, chans, epg)
-                meta = ({"tvg_id": tid, "name": name, "epg_id": cid, "how": how,
-                         "epg_name": epg.names[cid][0] if cid else None}, cid)
-                if cid:
-                    dn = epg.names[cid][0].replace('"', "'")
-                    attrs = 'tvg-id="%s" tvg-name="%s"' % (cid, dn)
-                    if m:
-                        line = line.replace(m.group(0), attrs, 1)
-                    else:
-                        line = line.replace("#EXTINF:-1", "#EXTINF:-1 " + attrs, 1)
-                    line = re.sub(r'(tvg-name="[^"]*")(.*?)\s+tvg-name="[^"]*"', r"\1\2", line)
-                block = [line]
-            elif block is not None and (line.startswith("#") or not line.strip()):
-                if line.strip():
-                    block.append(line)
-            elif block is not None:
-                if line.strip() in excluded:
-                    skipped += 1
+            line = e["extinf"]
+            cid, how = epg_id(e)
+            if cid:
+                used.add(cid)
+                dn = epg.names[cid][0].replace('"', "'")
+                attrs = 'tvg-id="%s" tvg-name="%s"' % (cid, dn)
+                m = re.search(r'tvg-id="[^"]*"', line)
+                if m:
+                    line = line.replace(m.group(0), attrs, 1)
                 else:
-                    out.extend(block + [line])
-                    rows.append(meta[0])
-                    if meta[1]:
-                        used.add(meta[1])
-                block, meta = None, None
-            elif line.strip():
-                out.append(line)
+                    line = re.sub(r"^#EXTINF:(-?\d+)", r"#EXTINF:\1 " + attrs, line, 1)
+                line = re.sub(r'(tvg-name="[^"]*")(.*?)\s+tvg-name="[^"]*"', r"\1\2", line)
+            if group:
+                if 'group-title="' in line:
+                    line = re.sub(r'group-title="[^"]*"', 'group-title="%s"' % group, line, 1)
+                else:
+                    head, _, tail = line.rpartition(",")
+                    line = '%s group-title="%s",%s' % (head.rstrip(), group, tail)
+            out.extend([line] + e["opts"] + [e["url"]])
+            rows.append({"tvg_id": e["tid"], "name": e["name"], "epg_id": cid, "how": how,
+                         "epg_name": epg.names[cid][0] if cid else None})
         outputs[key + ".m3u"] = "\n".join(out) + "\n"
         n = sum(1 for r in rows if r["epg_id"])
         print("%s: %d channels (%d excluded), EPG matched %d" % (key, len(rows), skipped, n), file=sys.stderr)
-        if len(rows) < 50:
+        if len(rows) < MIN_CHANNELS.get(key, 3):
             sys.exit("%s looks broken (%d channels), not overwriting outputs" % (key, len(rows)))
         report[key] = rows
     for fn, text in outputs.items():
