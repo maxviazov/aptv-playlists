@@ -17,22 +17,20 @@ https://stream.smotrim.ru/hls2/ext_spbtv/playlist_5.m3u8
 https://user91229.clients-cdnnow.ru/hls/user91229_1.m3u8
 #EXTINF:-1 tvg-id="bst" tvg-name="БСТ" tvg-logo="https://i.imgur.com/IDotHmQ.png" group-title="КХЛ на региональных каналах",BST (576p) · Салават Юлаев
 https://bsttv.bonus-tv.ru/cdn/bst/playlist.m3u8
-#EXTINF:-1 tvg-name="Нижний Новгород 24" tvg-logo="https://i.imgur.com/ZWgPVIC.png" tvg-id="nn-24" tvg-country="RU" group-title="КХЛ на региональных каналах",Нижний Новгород 24 · Торпедо
+#EXTINF:-1 tvg-id="nn-24" tvg-name="Нижний Новгород 24" tvg-logo="https://iptvx.one/picons/nn-24.png" group-title="КХЛ на региональных каналах" ,Нижний Новгород 24 HD · Торпедо
 https://live-vestinn.cdnvideo.ru/vestinn/nn24-khl/playlist.m3u8
 #EXTINF:-1 tvg-id="pervy-yaroslavsky" tvg-name="Первый Ярославский" tvg-logo="https://iptvx.one/picons/pervy-yaroslavsky.png" group-title="КХЛ на региональных каналах" ,Первый Ярославский · Локомотив
 https://yaroslavl.mediacdn.ru/cdn/pervyaroslavsk/playlist.m3u8
 #EXTINF:-1 tvg-id="12-omsk" tvg-name="12 канал Омск" tvg-logo="https://iptvx.one/picons/12-omsk.png" group-title="КХЛ на региональных каналах" ,12 Канал (Омск) · Авангард
-https://rt-sib-omsk-htlive.cdn.ngenix.net/hls/CH_R01_12CHANNEL/variant.m3u8
+http://12channel.bonus-tv.ru/cdn/12channel/playlist_hdhigh.m3u8
 #EXTINF:-1 tvg-id="otv-chelyabinsk" tvg-name="ОТВ Челябинск" tvg-logo="https://iptvx.one/picons/otv-chelyabinsk.png" group-title="КХЛ на региональных каналах" ,ОТВ (Челябинск) · Трактор
 https://rt-ural-chel-htlive.cdn.ngenix.net/hls/CH_R02_OTT_OTV_CHEL/variant.m3u8
 #EXTINF:-1 tvg-id="otv-eburg" tvg-name="ОТВ Екатеринбург" tvg-logo="https://iptvx.one/picons/otv-eburg.png" group-title="КХЛ на региональных каналах" ,ОТВ (Екатеринбург) · Автомобилист
-https://rt-ural-ekt-htlive.cdn.ngenix.net/hls/CH_R01_OTT_INKOMTV/variant.m3u8
+https://vd.obltv.ru/watch/air_hd.m3u8
 #EXTINF:-1 tvg-id="OTVPrim.ru@SD" tvg-logo="https://i.imgur.com/2zd8trG.png" group-title="КХЛ на региональных каналах",OTV-Prim · Адмирал
 https://jz2lo90hnpy.a.trbcdn.net/livemaster/yo8gr_live-5gorrrfpouq.smil/playlist.m3u8
 #EXTINF:-1 tvg-id="ots" tvg-name="ОТС" tvg-logo="https://iptvx.one/picons/ots.png" group-title="КХЛ на региональных каналах" ,ОТС · Сибирь
 http://tele2dvrnat01-02.cdnvideo.ru/stream/NAT_OTC_ap1f55f482a2df2bede07c661806c4eb/hls/1024x576@1272/playlist.m3u8
-#EXTINF:-1 tvg-id="tolyatti24" tvg-name="Тольятти 24" tvg-logo="https://iptvx.one/picons/tolyatti24.png" group-title="КХЛ на региональных каналах" ,Тольятти 24 · Лада
-http://rt-vlg-samara-htlive.cdn.ngenix.net/hls/CH_R01_TOLYTTI24/variant.m3u8
 #EXTINF:-1 tvg-id="sochi24" tvg-name="Сочи24" tvg-logo="https://i.imgur.com/iwWxkl6.png" group-title="КХЛ на региональных каналах",Sochi24 (720p) · Сочи
 http://serv30.vintera.tv:8081/sochi/sochi24_tv/playlist.m3u8
 #EXTINF:-1 tvg-id="AstrahanRuSport.ru@SD" tvg-logo="https://i.imgur.com/BKaEtqL.png" group-title="Спорт",Astrahan.Ru Sport (720p)
@@ -62,10 +60,11 @@ https://live-3.otcnet.ru/sportivny/index.m3u8
 https://stream8.cinerama.uz/1274/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-id="viasat-sport" tvg-name="viju+ Sport" tvg-logo="https://i.imgur.com/fXESG0l.png" group-title="Спорт",viju+ Sport (576p)
 http://stream.mcquack.net/333/index.m3u8
-#EXTINF:-1 tvg-id="https://static.wikia.nocookie.net/tvpedia/images/6/64/ASTRAKHAN.RU_SPORT.jpg/revision/latest/scale-to-width-down/1200?cb=20240419121027&path-prefix=ru" tvg-logo="https://raw.githubusercontent.com/blackbirdstudiorus/LoganetXIPTV/main/IMG_20230719_152756.png" group-title="Спорт" ,Astrakhan.RU SPORT
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/blackbirdstudiorus/LoganetXIPTV/main/IMG_20230719_152756.png" group-title="Спорт" ,Astrakhan.RU SPORT
 http://streaming.astrakhan.ru/astrakhanrusporthd/playlist.m3u8
-#EXTINF:-1 tvg-id="match-tv" tvg-name="Матч!" tvg-logo="https://iptvx.one/picons/match-tv.png" group-title="Спорт",Матч!
-#EXTVLCOPT:http-user-agent="WINK/1.80.1 (AndroidTV/9) HlsWinkPlayer"
-https://zabava-htlive.cdn.ngenix.net/hls/CH_MATCHTV/variant.m3u8
+#EXTINF:-1 tvg-id="match-tv" tvg-name="Матч!" tvg-logo="https://iptvx.one/picons/match-tv.png" group-title="Спорт" ,Матч!
+http://bl.video.matchtv.ru/media/playlist/free_d46d0cf1712c0542ec7fd4f0808f600a_hd/17_89756005/1080/e6bef86de8a133cd7b27deb040758a00/4796141934.m3u8
 #EXTINF:-1 tvg-id="sportivny" tvg-name="ТВ Спорт" tvg-logo="https://iptvx.one/picons/sportivny.png" group-title="Спорт" ,ТВ Спорт
 http://live-3.otcnet.ru/sportivny/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-id="football-ru" tvg-name="Футбол" tvg-logo="https://iptvx.one/picons/football-ru.png" group-title="Спорт" ,Футбол HD
+http://178.124.179.122:8088/Setanta1/index.m3u8
