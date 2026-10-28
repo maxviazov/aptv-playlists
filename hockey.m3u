@@ -37,6 +37,8 @@ http://serv30.vintera.tv:8081/sochi/sochi24_tv/playlist.m3u8
 https://streaming.astrakhan.ru/astrakhanrusporthd/playlist.m3u8
 #EXTINF:-1 tvg-id="match-boets" tvg-name="Матч! Боец" tvg-logo="https://i.imgur.com/DogOkA4.png" group-title="Спорт",Match! Boets (576p)
 http://stream.mcquack.net/112/index.m3u8
+#EXTINF:-1 tvg-id="match-premier" tvg-name="Матч! Премьер" tvg-logo="https://i.imgur.com/GQPyHYK.png" group-title="Спорт",Match! Premier (576p)
+http://185.23.80.23:8080/MATCH_PREMIER/index.m3u8
 #EXTINF:-1 tvg-id="MatchUltra.ru@4K" tvg-logo="https://www.kartina.tv/media/news/images/News/SEO/kanal-match-ultra.jpg" group-title="Спорт",Match! Ultra (1080p)
 http://31.148.5.241/kanal_3/index.m3u8
 #EXTINF:-1 tvg-id="m1global" tvg-name="MMA-TV" tvg-logo="https://i.imgur.com/QhdxNsB.png" group-title="Спорт",MMA-TV.com (1080p)

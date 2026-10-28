@@ -53,6 +53,8 @@ http://stream.mcquack.net/385/index.m3u8
 http://88.99.215.227/FilmUADrama/index.m3u8
 #EXTINF:-1 tvg-id="foxlife" tvg-name="FX Life" tvg-logo="https://i.imgur.com/O2miSLA.png" group-title="Кино и сериалы",Fox Life (576p)
 http://stream.mcquack.net/129/index.m3u8
+#EXTINF:-1 tvg-id="khit" tvg-name="Хит" tvg-logo="https://i.imgur.com/jl3MNPe.png" group-title="Кино и сериалы",Hit HD (1080p)
+http://stream.mcquack.net/363/index.m3u8
 #EXTINF:-1 tvg-id="HorosheeKino.ru@SD" tvg-logo="https://i.imgur.com/ZbOqfy4.png" group-title="Кино и сериалы",Horoshee Kino (720p)
 https://live-rian.cdnvideo.ru/rian/rus-radio/playlist.m3u8
 #EXTINF:-1 tvg-id="illuzion-plus" tvg-name="Иллюзион +" tvg-logo="https://i.imgur.com/9GvuHQ5.png" group-title="Кино и сериалы",Illusion+ (576p)
@@ -79,6 +81,8 @@ http://stream.mcquack.net/64/index.m3u8
 http://5.188.159.128:8070/KINOPREMIERA/index.m3u8
 #EXTINF:-1 tvg-id="kinosemiya" tvg-name="Киносемья" tvg-logo="https://i.imgur.com/4BF5VeK.png" group-title="Кино и сериалы",Kinosemja (576p)
 http://stream.mcquack.net/170/index.m3u8
+#EXTINF:-1 tvg-id="kinoseria" tvg-name="Киносерия" tvg-logo="https://i.imgur.com/iao7zLZ.png" group-title="Кино и сериалы",Kinoseriya (576p)
+https://fs.uplink.kz/kinoseria/mono.m3u8?token=onlinetv
 #EXTINF:-1 tvg-id="kinosvidanie" tvg-name="Киносвидание" tvg-logo="https://i.imgur.com/ZRaWqxj.png" group-title="Кино и сериалы",Kinosvidanie (576p)
 http://5.188.159.128:8070/kinosvidanie/index.m3u8
 #EXTINF:-1 tvg-id="kinouzhas" tvg-name="Киноужас" tvg-logo="https://i.imgur.com/mAcAAQF.png" group-title="Кино и сериалы",Kinouzhas (576p)
@@ -100,6 +104,8 @@ http://stream.mcquack.net/362/index.m3u8
 https://stream8.cinerama.uz/1051/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-id="Nevskiy.ru@SD" tvg-logo="https://cdn2-static.ntv.ru/home/promo/24740/nevski_llive.jpg" group-title="Кино и сериалы",Nevskiy (1080p)
 https://cdn-dvr.ntv.ru/Nevskiy/index.m3u8
+#EXTINF:-1 tvg-id="nostalgia" tvg-name="Ностальгия" tvg-logo="https://i.imgur.com/YBdBc0J.png" group-title="Кино и сериалы",Nostalgia (Russia) (576p)
+http://176.118.197.101/Nostalgiya/index.m3u8
 #EXTINF:-1 tvg-id="ntv-serial" tvg-name="НТВ Сериал" tvg-logo="https://i.imgur.com/QdVa8tl.png" group-title="Кино и сериалы",NTV Series (576p)
 http://stream.mcquack.net/301/index.m3u8
 #EXTINF:-1 tvg-id="ntv-xit" tvg-name="НТВ-Хит" tvg-logo="https://i.imgur.com/FfKBvz5.png" group-title="Кино и сериалы",NTV-Hit (576p)
@@ -348,6 +354,8 @@ https://jmp2.uk/plu-66ba1e4446762a000855cd87.m3u8
 https://d6dg3ebeih71x.cloudfront.net/Gravitas_Movies.m3u8
 #EXTINF:-1 tvg-id="HallmarkMoviesMore.us@SD" tvg-logo="https://provider-static.plex.tv/epg/cms/production/29af70d1-d3ba-4a16-bc4d-bd99e7e7def4/hallmark-movies-and-more_color.png" group-title="International",Hallmark Movies & More (1080p)
 https://dbrb49pjoymg4.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod_default_xumo-ams-aws/master.m3u8?ads.xumo_channelId=99991709
+#EXTINF:-1 tvg-id="HallmarkMystery.us@East" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/3/32/Hallmark_Mystery_2024.svg" group-title="International",Hallmark Mystery (720p) [Geo-blocked]
+http://41.205.93.154/HALLMARK/index.m3u8
 #EXTINF:-1 tvg-id="HBO2LatinAmerica.us@HD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/HBO2_logo.svg/960px-HBO2_logo.svg.png" group-title="International",HBO 2 Latin America HD (1080p)
 http://45.171.64.30:6060/play/a00i/index.m3u8
 #EXTINF:-1 tvg-id="HBO.us@East" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/HBO_logo.svg/960px-HBO_logo.svg.png" group-title="International",HBO (United States) (720p)
@@ -404,6 +412,8 @@ https://a-cdn.klowdtv.com/live2/nost_720p/playlist.m3u8
 https://d3o593mz1glx8d.cloudfront.net/OuterSphere_US.m3u8
 #EXTINF:-1 tvg-id="ParamountMovieChannel.us@SD" tvg-logo="https://i.imgur.com/sj5h9bl.png" group-title="International",Paramount Movie Channel
 https://jmp2.uk/plu-5cb0cae7a461406ffe3f5213.m3u8
+#EXTINF:-1 tvg-id="ParamountNetwork.us@East" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Paramount_Network.svg/960px-Paramount_Network.svg.png" group-title="International",Paramount Network (1080p)
+http://23.237.104.106:8080/USA_PARAMOUNT_NETWORK/index.m3u8
 #EXTINF:-1 tvg-id="ParamountPlusPicks.us@SD" tvg-logo="https://images.pluto.tv/channels/5ff8c708653d080007361b14/featuredImage.jpg" group-title="International",Paramount+ Picks
 https://jmp2.uk/plu-5ff8c708653d080007361b14.m3u8
 #EXTINF:-1 tvg-id="PlutoClassicMovieWesterns.us@CA" tvg-logo="https://images.pluto.tv/channels/66dad50215d2c60008d7afbd/colorLogoPNG.png" group-title="International",Pluto Classic Movie Westerns
