@@ -1,8 +1,7 @@
 name: update
 
 on:
-  schedule:
-    - cron: "0 3 * * *"
+  # Daily schedule disabled 2026-11-18 (billing lock). Re-enable with: schedule: [{ cron: "0 3 * * *" }]
   workflow_dispatch:
 
 permissions:
